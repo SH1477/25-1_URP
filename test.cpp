@@ -3,7 +3,6 @@
 using namespace std;
 
 int main(){
-    cout << "Hello, World!" << endl;
-    cout << "i want to slepp" << endl;
+    cout << "2022311005 김세훈" << endl;
     return 0;
 }
