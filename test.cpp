@@ -4,7 +4,7 @@
 
 using namespace std;
 
-const int PAGE_SIZE = 16384;        //4KB=4096, 8KB=8192, 16KB=16384
+const int PAGE_SIZE = 4096;        //4KB=4096, 8KB=8192, 16KB=16384
 
 void printBits(const unsigned char* page, size_t size) {
     for (size_t i = 0; i < size; ++i) {
@@ -39,7 +39,7 @@ void Num_state(unsigned char** pages, int total_page){
                 else state7++;
             }
         }
-        cout << i+1 << "th page" << endl;
+        //cout << i+1 << "th page" << endl;
     }
     cout << "number of state0 (111): " << state0 << endl;
     cout << "number of state1 (011): " << state1 << endl;
@@ -64,7 +64,7 @@ int main() {
     streamsize fileSize = file.tellg();
     file.seekg(0, ios::beg);
 
-    int totalPages = (fileSize + PAGE_SIZE - 1) / PAGE_SIZE;        //number of page
+    int totalPages = (fileSize + PAGE_SIZE - 1) / PAGE_SIZE;
 
     // initial lize array
     unsigned char** pages = new unsigned char*[totalPages];
@@ -72,20 +72,31 @@ int main() {
     // store the data to array
     for (int page_num = 0; page_num < totalPages; ++page_num) {
 
-        // Each pages array entry
         pages[page_num] = new unsigned char[PAGE_SIZE];
 
-        // read file
-        file.read(reinterpret_cast<char*>(pages[page_num]), PAGE_SIZE);
+        if(page_num == totalPages-1){
+            int read_bytes = fileSize % PAGE_SIZE;
 
-        //printBits(pages[page_num], PAGE_SIZE);
+            if (read_bytes == 0){
+                file.read(reinterpret_cast<char*>(pages[page_num]), PAGE_SIZE);
+            }
+            else{
+                file.read(reinterpret_cast<char*>(pages[page_num]), read_bytes);
+                for(int bytes_num = read_bytes; bytes_num < PAGE_SIZE; bytes_num++){
+                    pages[page_num][bytes_num] = 0xFF;      //padding with 1 at last page
+                }
+            }
+        }
+        else{
+            file.read(reinterpret_cast<char*>(pages[page_num]), PAGE_SIZE);
+        }
+
+        //printBits(pages[page_num], PAGE_SIZE);        //for tracing bit
     }
 
     cout << "file size: " << fileSize << " Byte (" << totalPages << " page)" << endl;
     
     Num_state(pages, totalPages);
-
-    cout << "file size: " << fileSize << " Byte (" << totalPages << " page)" << endl;
 
     file.close();
 
